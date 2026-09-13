@@ -1,0 +1,572 @@
+/* ------------------------------------------------------------
+   Colour palette and shared design tokens.
+   Change these values to restyle the whole app at once.
+   ------------------------------------------------------------ */
+:root{
+  --paper:#faf7f0;
+  --paper-raised:#ffffff;
+  --ink:#262420;
+  --ink-soft:#68625a;
+  --line:#e3ddd0;
+  --sage:#5f7a5f;
+  --sage-soft:#e7ede6;
+  --rust:#9c4a3c;
+  --rust-soft:#f3e5e1;
+}
+
+/* ------------------------------------------------------------
+   Page basics
+   ------------------------------------------------------------ */
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{
+  max-width:640px;
+  margin:0 auto;
+  padding:32px 20px 80px;
+}
+
+/* ------------------------------------------------------------
+   Header: app title and the day you are looking at
+   ------------------------------------------------------------ */
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:28px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:16px;
+}
+header h1{
+  font-family:'Newsreader', serif;
+  font-weight:500;
+  font-size:22px;
+  margin:0;
+  letter-spacing:0.01em;
+}
+header .date-nav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+header .date-nav button{
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  font-size:16px;
+  cursor:pointer;
+  padding:2px 6px;
+  line-height:1;
+}
+header .date-nav button:hover{ color:var(--ink); }
+header .date-nav .today-link{
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+  background:none;
+  border:none;
+  color:var(--sage);
+  font-size:13px;
+  padding:0;
+}
+
+/* ------------------------------------------------------------
+   Total card: the big calorie number, progress bar and daily target
+   ------------------------------------------------------------ */
+.totalcard{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:24px 24px 20px;
+  margin-bottom:24px;
+}
+.totalcard .big{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+}
+.totalcard .num{
+  font-family:'Newsreader', serif;
+  font-size:56px;
+  line-height:1;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.totalcard .num.over{ color:var(--rust); }
+.totalcard .unit{
+  font-size:15px;
+  color:var(--ink-soft);
+}
+.totalcard .target-row{
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.totalcard .target-row .edit-target{
+  background:none;
+  border:none;
+  color:var(--sage);
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+  font-size:13px;
+  padding:0;
+}
+.barwrap{
+  margin-top:14px;
+  height:6px;
+  background:var(--line);
+  border-radius:3px;
+  overflow:hidden;
+}
+.bar{
+  height:100%;
+  background:var(--sage);
+  transition:width 0.3s ease;
+}
+.bar.over{ background:var(--rust); }
+
+/* ------------------------------------------------------------
+   Section blocks ("Search foods", "Today's log", ...)
+   ------------------------------------------------------------ */
+section.block{ margin-bottom:28px; }
+section.block h2{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:13px;
+  text-transform:none;
+  letter-spacing:0.02em;
+  color:var(--ink-soft);
+  font-weight:500;
+  margin:0 0 10px;
+}
+
+/* ------------------------------------------------------------
+   Form controls: text inputs, number inputs and buttons
+   ------------------------------------------------------------ */
+input[type=text], input[type=number], input[type=password]{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:14px;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:var(--paper-raised);
+  color:var(--ink);
+}
+input:focus{ outline:2px solid var(--sage); outline-offset:1px; }
+button{ font-family:'IBM Plex Sans', sans-serif; }
+.btn{
+  background:var(--ink);
+  color:var(--paper);
+  border:none;
+  padding:9px 16px;
+  border-radius:3px;
+  font-size:14px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn:hover{ background:#3a362f; }
+.btn.secondary{
+  background:var(--paper-raised);
+  color:var(--ink);
+  border:1px solid var(--line);
+}
+.btn.secondary:hover{ background:var(--sage-soft); }
+.btn:disabled{ opacity:0.5; cursor:default; }
+
+/* ------------------------------------------------------------
+   Food search results (Open Food Facts)
+   ------------------------------------------------------------ */
+.searchbox{ position:relative; margin-bottom:10px; }
+.searchbox input{ width:100%; }
+.results{
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:var(--paper-raised);
+  max-height:280px;
+  overflow-y:auto;
+}
+.result-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.result-row:last-child{ border-bottom:none; }
+.result-row .rname{ flex:1; min-width:0; }
+.result-row .rname .brand{ color:var(--ink-soft); font-size:12px; display:block; }
+.result-row .rcal{
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-soft);
+  font-size:12.5px;
+  white-space:nowrap;
+}
+.result-row button{
+  background:none;
+  border:1px solid var(--line);
+  color:var(--sage);
+  border-radius:3px;
+  padding:4px 10px;
+  font-size:12.5px;
+  cursor:pointer;
+}
+.result-row button:hover{ background:var(--sage-soft); }
+.searchmeta{ font-size:12px; color:var(--ink-soft); padding:8px 2px; }
+
+/* ------------------------------------------------------------
+   The day's food log
+   ------------------------------------------------------------ */
+.entry-list{ border:1px solid var(--line); border-radius:3px; background:var(--paper-raised); }
+
+/* Meal sections — breakfast / lunch / dinner / snacks. Separated by the same
+   hairline as everything else; no boxes, no shadows. */
+.meal-section{ border-bottom:1px solid var(--line); }
+.meal-section:last-child{ border-bottom:none; }
+/* Fold toggle and + button sit side by side; the toggle takes the slack. */
+.meal-header-row{ display:flex; align-items:stretch; }
+.meal-header{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  background:none;
+  border:none;
+  padding:12px 12px;
+  text-align:left;
+  /* Deliberately a step above the 14px entry rows, so the header reads as the
+     parent of the items indented beneath it. */
+  font-size:15px;
+  color:var(--ink);
+  cursor:pointer;
+}
+.meal-caret{
+  width:0;
+  height:0;
+  flex:none;
+  border-left:5px solid var(--ink-soft);
+  border-top:4px solid transparent;
+  border-bottom:4px solid transparent;
+  transform:rotate(90deg);
+  transition:transform 150ms ease;
+}
+.meal-section.collapsed .meal-caret{ transform:rotate(0deg); }
+.meal-name{ flex:1; min-width:0; font-weight:500; }
+/* A step below the meal name, which carries the header. */
+.meal-total{
+  color:var(--ink-soft);
+  font-size:14px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.meal-section.collapsed .meal-rows{ display:none; }
+
+/* Rows step in under their header so the hierarchy reads at a glance. The 26px
+   lines them up with the meal name above: 12px header padding + 5px caret +
+   9px gap. Change any of those three and this wants changing with them. */
+.meal-rows .entry,
+.meal-rows .empty{ padding-left:26px; }
+
+.meal-add{
+  flex:none;
+  background:none;
+  border:none;
+  color:var(--ink-soft);
+  font-size:18px;
+  line-height:1;
+  padding:0 14px;
+  cursor:pointer;
+}
+.meal-add:hover{ background:var(--sage-soft); color:var(--sage); }
+
+/* Closing row under the four sections. The last .meal-section keeps its own
+   bottom hairline now that it is no longer :last-child, so no border here. */
+.meal-grand-total{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:13px 12px;
+  font-size:15px;
+}
+.grand-label{ font-weight:500; }
+.grand-value{
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.entry{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:11px 12px;
+  border-bottom:1px solid var(--line);
+  font-size:14px;
+}
+.entry:last-child{ border-bottom:none; }
+.entry{ cursor:pointer; }
+.entry:hover{ background:var(--sage-soft); }
+.entry .ename{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.entry .ename .etext{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.entry .eamount{ color:var(--ink-soft); font-size:12px; }
+.entry .eright{ display:flex; align-items:center; gap:12px; }
+.entry .ecal{ font-variant-numeric:tabular-nums; color:var(--ink-soft); font-size:13px; white-space:nowrap; }
+/* Same weight as the delete × next to it. Do not reach for --line here: it is
+   the hairline colour and disappears against the white row. */
+.entry .efav{
+  background:none; border:none; color:var(--ink-soft);
+  cursor:pointer; font-size:16px; line-height:1; padding:2px 4px;
+}
+.entry .efav:hover{ color:var(--sage); }
+.entry .efav.on{ color:var(--sage); }
+.entry .edel{
+  background:none; border:none; color:var(--ink-soft);
+  cursor:pointer; font-size:16px; line-height:1; padding:2px 4px;
+}
+.entry .edel:hover{ color:var(--rust); }
+.empty{ padding:20px 12px; color:var(--ink-soft); font-size:13.5px; text-align:center; }
+
+/* ------------------------------------------------------------
+   Weight input, kg/lb toggle and weight history
+   ------------------------------------------------------------ */
+.weightrow{ display:flex; gap:8px; margin-bottom:14px; }
+.weightrow input{ width:110px; }
+.weight-history{ display:flex; flex-direction:column; gap:0; }
+.weight-entry{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:9px 12px; border-bottom:1px solid var(--line); font-size:13.5px;
+}
+.weight-entry:last-child{ border-bottom:none; }
+.weight-entry .wdate{ color:var(--ink-soft); }
+.weight-entry .wval{ font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:10px; }
+.weight-entry .wdel{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:15px; padding:2px 4px; }
+.weight-entry .wdel:hover{ color:var(--rust); }
+.weight-delta{ font-size:12px; }
+.weight-delta.down{ color:var(--sage); }
+.weight-delta.up{ color:var(--rust); }
+
+.weight-unit{ font-size:13px; color:var(--ink-soft); align-self:center; }
+
+/* ------------------------------------------------------------
+   Weight trend chart (hand-built SVG)
+   ------------------------------------------------------------ */
+.chartbox{
+  border:1px solid var(--line);
+  border-radius:3px;
+  background:var(--paper-raised);
+  padding:14px 12px 6px;
+  margin-bottom:14px;
+}
+.chartbox svg{ display:block; width:100%; height:auto; overflow:visible; }
+.chartbox .chart-empty{ color:var(--ink-soft); font-size:13px; text-align:center; padding:24px 0; }
+.chart-pt{ fill:var(--sage); }
+.chart-line{ fill:none; stroke:var(--sage); stroke-width:2; }
+.chart-axis-label{ font-family:'IBM Plex Mono', monospace; font-size:10px; fill:var(--ink-soft); }
+
+/* ------------------------------------------------------------
+   Add / edit entry modal
+   ------------------------------------------------------------ */
+
+/* Keep the hidden attribute winning over any display rule below. */
+[hidden]{ display:none !important; }
+
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(38,36,32,0.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:10;
+}
+.modal{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:24px;
+  width:100%;
+  max-width:360px;
+}
+.modal-title{
+  font-family:'Newsreader', serif;
+  font-weight:500;
+  font-size:22px;
+  margin:0 0 18px;
+}
+.modal-label{
+  display:block;
+  font-size:12px;
+  color:var(--ink-soft);
+  margin-bottom:5px;
+}
+.modal input[type=text],
+.modal input[type=number]{
+  width:100%;
+}
+.modal #mealPickerField,
+.modal #gramFields,
+.modal #calorieFields{
+  margin-top:14px;
+}
+
+/* Favourites shortcut list at the top of the modal. */
+.modal #favoritesField{ margin-top:14px; }
+.favorites-list{
+  border:1px solid var(--line);
+  border-radius:3px;
+  max-height:150px;
+  overflow-y:auto;
+}
+.favorite-row{
+  display:flex;
+  align-items:stretch;
+  border-bottom:1px solid var(--line);
+}
+.favorite-row:last-child{ border-bottom:none; }
+.favorite-pick{
+  flex:1;
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  background:none;
+  border:none;
+  text-align:left;
+  padding:8px 10px;
+  font-size:13px;
+  color:var(--ink);
+  cursor:pointer;
+}
+.favorite-pick:hover{ background:var(--sage-soft); }
+.favorite-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.favorite-cal{
+  color:var(--ink-soft);
+  font-size:12px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+
+/* Segmented meal picker inside the modal — exactly one button active. */
+.meal-picker{ display:flex; }
+.meal-picker button{
+  flex:1;
+  min-width:0;
+  background:none;
+  border:1px solid var(--line);
+  border-right:none;
+  padding:7px 4px;
+  font-size:12px;
+  color:var(--ink-soft);
+  cursor:pointer;
+}
+.meal-picker button:first-child{ border-radius:3px 0 0 3px; }
+.meal-picker button:last-child{
+  border-right:1px solid var(--line);
+  border-radius:0 3px 3px 0;
+}
+.meal-picker button:hover{ background:var(--sage-soft); }
+.meal-picker button.active{
+  background:var(--sage-soft);
+  color:var(--sage);
+  border-color:var(--sage);
+}
+.amount-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.amount-row input{ flex:1; min-width:0; }
+.amount-unit{
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.calorie-preview{
+  font-family:'Newsreader', serif;
+  font-size:24px;
+  font-variant-numeric:tabular-nums;
+  color:var(--sage);
+  margin:12px 0 0;
+}
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:22px;
+}
+
+/* ------------------------------------------------------------
+   Sign-in screen
+   ------------------------------------------------------------ */
+.signin{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.signin-card{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:32px 28px;
+  width:100%;
+  max-width:340px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.signin-card h1{
+  font-family:'Newsreader', serif;
+  font-weight:500;
+  font-size:26px;
+  margin:0;
+}
+.signin-hint{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:0 0 6px;
+}
+.signin-card input{ width:100%; }
+.signin-card .btn{ margin-top:6px; }
+.signin-error{
+  font-size:12.5px;
+  color:var(--rust);
+  margin:0;
+  min-height:1em;
+}
+
+/* ------------------------------------------------------------
+   Footer and odds and ends
+   ------------------------------------------------------------ */
+footer{
+  text-align:center; font-size:11.5px; color:var(--ink-soft);
+  margin-top:24px; padding-top:16px; border-top:1px solid var(--line);
+}
+.signout-link{
+  background:none; border:none; padding:0;
+  color:var(--sage); font-size:11.5px; cursor:pointer;
+  text-decoration:underline; text-underline-offset:3px;
+}
+
+::selection{ background:var(--sage-soft); }
+
+/* ------------------------------------------------------------
+   Narrow screens (phones)
+   ------------------------------------------------------------ */
+@media (max-width:420px){
+  .totalcard .num{ font-size:44px; }
+}
