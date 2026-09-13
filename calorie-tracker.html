@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — daily calorie tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf7f0;
+    --paper-raised:#ffffff;
+    --ink:#262420;
+    --ink-soft:#68625a;
+    --line:#e3ddd0;
+    --sage:#5f7a5f;
+    --sage-soft:#e7ede6;
+    --rust:#9c4a3c;
+    --rust-soft:#f3e5e1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:32px 20px 80px;
+  }
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:28px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+  }
+  header h1{
+    font-family:'Newsreader', serif;
+    font-weight:500;
+    font-size:22px;
+    margin:0;
+    letter-spacing:0.01em;
+  }
+  header .date-nav{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+  header .date-nav button{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:16px;
+    cursor:pointer;
+    padding:2px 6px;
+    line-height:1;
+  }
+  header .date-nav button:hover{ color:var(--ink); }
+  header .date-nav .today-link{
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+    background:none;
+    border:none;
+    color:var(--sage);
+    font-size:13px;
+    padding:0;
+  }
+
+  .totalcard{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:24px 24px 20px;
+    margin-bottom:24px;
+  }
+  .totalcard .big{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .totalcard .num{
+    font-family:'Newsreader', serif;
+    font-size:56px;
+    line-height:1;
+    font-weight:500;
+    font-variant-numeric:tabular-nums;
+  }
+  .totalcard .num.over{ color:var(--rust); }
+  .totalcard .unit{
+    font-size:15px;
+    color:var(--ink-soft);
+  }
+  .totalcard .target-row{
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .totalcard .target-row .edit-target{
+    background:none;
+    border:none;
+    color:var(--sage);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    cursor:pointer;
+    font-size:13px;
+    padding:0;
+  }
+  .barwrap{
+    margin-top:14px;
+    height:6px;
+    background:var(--line);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .bar{
+    height:100%;
+    background:var(--sage);
+    transition:width 0.3s ease;
+  }
+  .bar.over{ background:var(--rust); }
+
+  section.block{ margin-bottom:28px; }
+  section.block h2{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13px;
+    text-transform:none;
+    letter-spacing:0.02em;
+    color:var(--ink-soft);
+    font-weight:500;
+    margin:0 0 10px;
+  }
+
+  .quickadd{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .quickadd input[type=text]{
+    flex:1;
+    min-width:0;
+  }
+  .quickadd input[type=number]{
+    width:88px;
+  }
+  input[type=text], input[type=number], input[type=password]{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--paper-raised);
+    color:var(--ink);
+  }
+  input:focus{ outline:2px solid var(--sage); outline-offset:1px; }
+  button{ font-family:'IBM Plex Sans', sans-serif; }
+  .btn{
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:9px 16px;
+    border-radius:3px;
+    font-size:14px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:hover{ background:#3a362f; }
+  .btn.secondary{
+    background:var(--paper-raised);
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn.secondary:hover{ background:var(--sage-soft); }
+  .btn:disabled{ opacity:0.5; cursor:default; }
+
+  .searchbox{ position:relative; margin-bottom:10px; }
+  .searchbox input{ width:100%; }
+  .results{
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--paper-raised);
+    max-height:280px;
+    overflow-y:auto;
+  }
+  .result-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    font-size:13.5px;
+  }
+  .result-row:last-child{ border-bottom:none; }
+  .result-row .rname{ flex:1; min-width:0; }
+  .result-row .rname .brand{ color:var(--ink-soft); font-size:12px; display:block; }
+  .result-row .rcal{
+    font-variant-numeric:tabular-nums;
+    color:var(--ink-soft);
+    font-size:12.5px;
+    white-space:nowrap;
+  }
+  .result-row button{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--sage);
+    border-radius:3px;
+    padding:4px 10px;
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .result-row button:hover{ background:var(--sage-soft); }
+  .searchmeta{ font-size:12px; color:var(--ink-soft); padding:8px 2px; }
+
+  .entry-list{ border:1px solid var(--line); border-radius:3px; background:var(--paper-raised); }
+  .entry{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:11px 12px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .entry:last-child{ border-bottom:none; }
+  .entry .ename{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .entry .eright{ display:flex; align-items:center; gap:12px; }
+  .entry .ecal{ font-variant-numeric:tabular-nums; color:var(--ink-soft); font-size:13px; white-space:nowrap; }
+  .entry .edel{
+    background:none; border:none; color:var(--ink-soft);
+    cursor:pointer; font-size:16px; line-height:1; padding:2px 4px;
+  }
+  .entry .edel:hover{ color:var(--rust); }
+  .empty{ padding:20px 12px; color:var(--ink-soft); font-size:13.5px; text-align:center; }
+
+  .weightrow{ display:flex; gap:8px; margin-bottom:14px; }
+  .weightrow input{ width:110px; }
+  .weight-history{ display:flex; flex-direction:column; gap:0; }
+  .weight-entry{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:9px 12px; border-bottom:1px solid var(--line); font-size:13.5px;
+  }
+  .weight-entry:last-child{ border-bottom:none; }
+  .weight-entry .wdate{ color:var(--ink-soft); }
+  .weight-entry .wval{ font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:10px; }
+  .weight-entry .wdel{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:15px; padding:2px 4px; }
+  .weight-entry .wdel:hover{ color:var(--rust); }
+  .weight-delta{ font-size:12px; }
+  .weight-delta.down{ color:var(--sage); }
+  .weight-delta.up{ color:var(--rust); }
+
+  .unit-toggle{ display:flex; gap:4px; font-size:12px; color:var(--ink-soft); }
+  .unit-toggle button{
+    background:none; border:1px solid var(--line); border-radius:3px;
+    padding:3px 8px; cursor:pointer; color:var(--ink-soft); font-size:12px;
+  }
+  .unit-toggle button.active{ background:var(--sage-soft); color:var(--sage); border-color:var(--sage); }
+
+  .chartbox{
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--paper-raised);
+    padding:14px 12px 6px;
+    margin-bottom:14px;
+  }
+  .chartbox svg{ display:block; width:100%; height:auto; overflow:visible; }
+  .chartbox .chart-empty{ color:var(--ink-soft); font-size:13px; text-align:center; padding:24px 0; }
+  .chart-pt{ fill:var(--sage); }
+  .chart-line{ fill:none; stroke:var(--sage); stroke-width:2; }
+  .chart-axis-label{ font-family:'IBM Plex Mono', monospace; font-size:10px; fill:var(--ink-soft); }
+
+  .data-controls{
+    display:flex; gap:8px; justify-content:center; margin-top:8px;
+  }
+  .data-controls button{
+    font-size:12px; padding:6px 12px;
+  }
+
+  footer{
+    text-align:center; font-size:11.5px; color:var(--ink-soft);
+    margin-top:24px; padding-top:16px; border-top:1px solid var(--line);
+  }
+
+  ::selection{ background:var(--sage-soft); }
+
+  @media (max-width:420px){
+    .totalcard .num{ font-size:44px; }
+    .quickadd{ flex-wrap:wrap; }
+    .quickadd input[type=text]{ flex:1 1 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Ledger</h1>
+    <div class="date-nav">
+      <button id="prevDay" aria-label="Previous day">←</button>
+      <span id="dateLabel">Today</span>
+      <button id="nextDay" aria-label="Next day">→</button>
+      <button class="today-link" id="jumpToday" style="display:none;">today</button>
+    </div>
+  </header>
+
+  <div class="totalcard">
+    <div class="big">
+      <span class="num" id="totalNum">0</span>
+      <span class="unit" id="totalUnit">kcal today</span>
+    </div>
+    <div class="barwrap"><div class="bar" id="progressBar" style="width:0%"></div></div>
+    <div class="target-row">
+      <span id="remainingLabel">Set a daily target to see what's left</span>
+      <button class="edit-target" id="editTargetBtn">set target</button>
+    </div>
+  </div>
+
+  <section class="block">
+    <h2>Quick add</h2>
+    <div class="quickadd">
+      <input type="text" id="quickName" placeholder="What is it? (optional)">
+      <input type="number" id="quickCal" placeholder="kcal" min="0">
+      <button class="btn" id="quickAddBtn">Add</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Search foods</h2>
+    <div class="searchbox">
+      <input type="text" id="searchInput" placeholder="Search a food or product…">
+    </div>
+    <div class="results" id="searchResults" style="display:none;"></div>
+    <div class="searchmeta" id="searchMeta"></div>
+  </section>
+
+  <section class="block">
+    <h2>Today's log</h2>
+    <div class="entry-list" id="entryList">
+      <div class="empty">Nothing logged yet.</div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Weight</h2>
+    <div class="weightrow">
+      <input type="number" id="weightInput" placeholder="0.0" step="0.1">
+      <div class="unit-toggle">
+        <button id="unitKg" class="active">kg</button>
+        <button id="unitLb">lb</button>
+      </div>
+      <button class="btn secondary" id="addWeightBtn">Log weight</button>
+    </div>
+    <div class="chartbox" id="chartBox"></div>
+    <div class="weight-history" id="weightHistory"></div>
+  </section>
+
+  <section class="block">
+    <h2>Your data</h2>
+    <div class="data-controls">
+      <button class="btn secondary" id="exportBtn">Export as JSON</button>
+      <button class="btn secondary" id="importBtn">Import JSON</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+    </div>
+  </section>
+
+  <footer>Stored privately in your browser session for this tracker · food data via Open Food Facts</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+
+  // ============================================================
+  // FIREBASE CONFIG — paste your config object from the Firebase
+  // console here (Project Settings > General > Your apps).
+  // Until apiKey below is a real value, the app falls back to
+  // Claude's built-in storage automatically — nothing breaks.
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbei2WJEQ6aRd-Bdlkl88SptrlNEAoy4M",
+    authDomain: "caloriecounter-6777f.firebaseapp.com",
+    databaseURL: "https://caloriecounter-6777f-default-rtdb.europe-west1.firebasedatabase.app/",
+    projectId: "caloriecounter-6777f",
+  };
+
+  let fbDb = null;
+  const firebaseReady = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+    firebaseConfig.databaseURL && firebaseConfig.databaseURL !== "PASTE_DATABASE_URL_HERE";
+  if(firebaseReady){
+    try{
+      firebase.initializeApp(firebaseConfig);
+      fbDb = firebase.database();
+    }catch(e){
+      console.error('Firebase init failed, falling back to local storage.', e);
+    }
+  }
+
+  function fbGet(path){
+    return new Promise((resolve) => {
+      fbDb.ref(path).once('value', snap => resolve(snap.val()), () => resolve(null));
+    });
+  }
+  function fbSet(path, value){
+    return fbDb.ref(path).set(value);
+  }
+
+  // ---------- state ----------
+  let currentDate = todayStr();
+  let weightUnit = 'kg';
+  let dailyTarget = null;
+
+  function todayStr(d){
+    const dt = d || new Date();
+    return dt.toISOString().slice(0,10);
+  }
+  function addDays(dateStr, n){
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return todayStr(d);
+  }
+  function formatDateLabel(dateStr){
+    if(dateStr === todayStr()) return 'Today';
+    if(dateStr === addDays(todayStr(), -1)) return 'Yesterday';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+  }
+
+  // ---------- storage helpers ----------
+  // Data shape stays identical either way: getLog returns an array of
+  // entries, getWeights returns an array of weight records, getSettings
+  // returns a plain object. Only the underlying store changes.
+
+  async function getLog(dateStr){
+    if(fbDb){
+      const val = await fbGet('logs/' + dateStr);
+      return val ? Object.values(val) : [];
+    }
+    try{
+      const r = await window.storage.get('log:' + dateStr);
+      return r ? JSON.parse(r.value) : [];
+    }catch(e){ return []; }
+  }
+  async function setLog(dateStr, entries){
+    if(fbDb){
+      const obj = {};
+      entries.forEach(e => { obj[e.id] = e; });
+      await fbSet('logs/' + dateStr, entries.length ? obj : null);
+      return;
+    }
+    try{ await window.storage.set('log:' + dateStr, JSON.stringify(entries)); }
+    catch(e){ console.error('save log failed', e); }
+  }
+  async function getWeights(){
+    if(fbDb){
+      const val = await fbGet('weights');
+      return val ? Object.values(val) : [];
+    }
+    try{
+      const r = await window.storage.get('weights');
+      return r ? JSON.parse(r.value) : [];
+    }catch(e){ return []; }
+  }
+  async function setWeights(list){
+    if(fbDb){
+      const obj = {};
+      list.forEach(w => { obj[w.ts] = w; });
+      await fbSet('weights', list.length ? obj : null);
+      return;
+    }
+    try{ await window.storage.set('weights', JSON.stringify(list)); }
+    catch(e){ console.error('save weights failed', e); }
+  }
+  async function getSettings(){
+    if(fbDb){
+      const val = await fbGet('settings');
+      return val || {};
+    }
+    try{
+      const r = await window.storage.get('settings');
+      return r ? JSON.parse(r.value) : {};
+    }catch(e){ return {}; }
+  }
+  async function setSettings(obj){
+    if(fbDb){
+      await fbSet('settings', obj);
+      return;
+    }
+    try{ await window.storage.set('settings', JSON.stringify(obj)); }
+    catch(e){ console.error('save settings failed', e); }
+  }
+
+  // ---------- render: header / date ----------
+  function renderDateNav(){
+    $('dateLabel').textContent = formatDateLabel(currentDate);
+    $('jumpToday').style.display = currentDate === todayStr() ? 'none' : 'inline';
+  }
+  $('prevDay').addEventListener('click', () => { currentDate = addDays(currentDate, -1); refreshLog(); });
+  $('nextDay').addEventListener('click', () => { currentDate = addDays(currentDate, 1); refreshLog(); });
+  $('jumpToday').addEventListener('click', () => { currentDate = todayStr(); refreshLog(); });
+
+  // ---------- render: total / target ----------
+  function renderTotal(entries){
+    const total = entries.reduce((s,e) => s + (Number(e.calories)||0), 0);
+    $('totalNum').textContent = total;
+    $('totalUnit').textContent = currentDate === todayStr() ? 'kcal today' : 'kcal that day';
+
+    const bar = $('progressBar');
+    const numEl = $('totalNum');
+    if(dailyTarget && dailyTarget > 0){
+      const pct = Math.min(100, (total/dailyTarget)*100);
+      bar.style.width = pct + '%';
+      const remaining = dailyTarget - total;
+      if(remaining >= 0){
+        $('remainingLabel').textContent = remaining + ' kcal left of ' + dailyTarget;
+        bar.classList.remove('over'); numEl.classList.remove('over');
+      } else {
+        $('remainingLabel').textContent = Math.abs(remaining) + ' kcal over ' + dailyTarget;
+        bar.classList.add('over'); numEl.classList.add('over');
+      }
+    } else {
+      bar.style.width = '0%';
+      $('remainingLabel').textContent = 'Set a daily target to see what\'s left';
+      bar.classList.remove('over'); numEl.classList.remove('over');
+    }
+  }
+
+  $('editTargetBtn').addEventListener('click', async () => {
+    const val = prompt('Daily calorie target (kcal):', dailyTarget || '');
+    if(val === null) return;
+    const n = parseInt(val, 10);
+    if(!isNaN(n) && n > 0){
+      dailyTarget = n;
+      await setSettings({ dailyTarget: n });
+      const entries = await getLog(currentDate);
+      renderTotal(entries);
+    }
+  });
+
+  // ---------- render: entry list ----------
+  function renderEntries(entries){
+    const list = $('entryList');
+    if(!entries.length){
+      list.innerHTML = '<div class="empty">Nothing logged yet.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    entries.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'entry';
+      row.innerHTML =
+        '<span class="ename">' + escapeHtml(e.name || 'Quick add') + '</span>' +
+        '<span class="eright">' +
+          '<span class="ecal">' + Math.round(e.calories) + ' kcal</span>' +
+          '<button class="edel" aria-label="Delete entry">×</button>' +
+        '</span>';
+      row.querySelector('.edel').addEventListener('click', async () => {
+        const fresh = await getLog(currentDate);
+        const idx = fresh.findIndex(x => x.id === e.id);
+        if(idx > -1){ fresh.splice(idx,1); await setLog(currentDate, fresh); refreshLog(); }
+      });
+      list.appendChild(row);
+    });
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  async function refreshLog(){
+    renderDateNav();
+    const entries = await getLog(currentDate);
+    renderTotal(entries);
+    renderEntries(entries);
+  }
+
+  async function addEntry(name, calories){
+    const entries = await getLog(currentDate);
+    entries.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2,7), name, calories, ts: Date.now() });
+    await setLog(currentDate, entries);
+    refreshLog();
+  }
+
+  // ---------- quick add ----------
+  $('quickAddBtn').addEventListener('click', quickAdd);
+  $('quickCal').addEventListener('keydown', e => { if(e.key === 'Enter') quickAdd(); });
+  $('quickName').addEventListener('keydown', e => { if(e.key === 'Enter') quickAdd(); });
+
+  function quickAdd(){
+    const name = $('quickName').value.trim();
+    const cal = parseFloat($('quickCal').value);
+    if(isNaN(cal) || cal <= 0){ $('quickCal').focus(); return; }
+    addEntry(name || 'Quick add', cal);
+    $('quickName').value = '';
+    $('quickCal').value = '';
+    $('quickName').focus();
+  }
+
+  // ---------- food search (Open Food Facts) ----------
+  let searchTimer = null;
+  $('searchInput').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const q = $('searchInput').value.trim();
+    if(q.length < 2){
+      $('searchResults').style.display = 'none';
+      $('searchMeta').textContent = '';
+      return;
+    }
+    searchTimer = setTimeout(() => doSearch(q), 450);
+  });
+
+  async function doSearch(query){
+    $('searchMeta').textContent = 'Searching…';
+    $('searchResults').style.display = 'none';
+    try{
+      const url = 'https://world.openfoodfacts.org/cgi/search.pl?search_terms=' +
+        encodeURIComponent(query) +
+        '&search_simple=1&action=process&json=1&page_size=15&fields=product_name,brands,nutriments';
+      const res = await fetch(url);
+      const data = await res.json();
+      const products = (data.products || []).filter(p =>
+        p.product_name && p.nutriments && (p.nutriments['energy-kcal_100g'] || p.nutriments['energy-kcal_serving'])
+      );
+      renderResults(products, query);
+    }catch(err){
+      $('searchMeta').textContent = 'Search failed — check your connection and try again.';
+    }
+  }
+
+  function renderResults(products, query){
+    const box = $('searchResults');
+    if(!products.length){
+      box.style.display = 'none';
+      $('searchMeta').textContent = 'No matches for "' + query + '". Try a shorter or more generic term, or use Quick add.';
+      return;
+    }
+    $('searchMeta').textContent = products.length + ' result' + (products.length===1?'':'s') + ' · per 100g shown, tap to add';
+    box.innerHTML = '';
+    products.slice(0,15).forEach(p => {
+      const kcal100 = p.nutriments['energy-kcal_100g'];
+      const kcalServing = p.nutriments['energy-kcal_serving'];
+      const displayCal = kcal100 != null ? Math.round(kcal100) : Math.round(kcalServing);
+      const label = kcal100 != null ? (displayCal + ' kcal/100g') : (displayCal + ' kcal/serving');
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.innerHTML =
+        '<span class="rname">' + escapeHtml(p.product_name) +
+          (p.brands ? '<span class="brand">' + escapeHtml(p.brands.split(',')[0]) + '</span>' : '') +
+        '</span>' +
+        '<span class="rcal">' + label + '</span>' +
+        '<button>add</button>';
+      row.querySelector('button').addEventListener('click', () => {
+        const grams = kcal100 != null ? prompt('Grams eaten (100g = ' + displayCal + ' kcal):', '100') : null;
+        let finalCal = displayCal;
+        let finalName = p.product_name;
+        if(kcal100 != null && grams !== null){
+          const g = parseFloat(grams);
+          if(!isNaN(g) && g > 0){
+            finalCal = Math.round((kcal100 * g) / 100);
+            finalName = p.product_name + ' (' + g + 'g)';
+          } else { return; }
+        } else if(kcal100 != null && grams === null){
+          return;
+        }
+        addEntry(finalName, finalCal);
+        $('searchInput').value = '';
+        box.style.display = 'none';
+        $('searchMeta').textContent = '';
+      });
+      box.appendChild(row);
+    });
+    box.style.display = 'block';
+  }
+
+  // ---------- weight ----------
+  $('unitKg').addEventListener('click', () => setUnit('kg'));
+  $('unitLb').addEventListener('click', () => setUnit('lb'));
+  function setUnit(u){
+    weightUnit = u;
+    $('unitKg').classList.toggle('active', u === 'kg');
+    $('unitLb').classList.toggle('active', u === 'lb');
+  }
+
+  $('addWeightBtn').addEventListener('click', addWeight);
+  $('weightInput').addEventListener('keydown', e => { if(e.key === 'Enter') addWeight(); });
+
+  async function addWeight(){
+    const val = parseFloat($('weightInput').value);
+    if(isNaN(val) || val <= 0) return;
+    const kg = weightUnit === 'kg' ? val : val * 0.453592;
+    const list = await getWeights();
+    list.push({ date: todayStr(), kg: kg, ts: Date.now() });
+    list.sort((a,b) => a.ts - b.ts);
+    await setWeights(list);
+    $('weightInput').value = '';
+    renderWeightHistory();
+  }
+
+  async function renderWeightHistory(){
+    const list = await getWeights();
+    renderWeightChart(list);
+    const box = $('weightHistory');
+    if(!list.length){
+      box.innerHTML = '<div class="empty">No weight logged yet.</div>';
+      return;
+    }
+    const sorted = [...list].sort((a,b) => b.ts - a.ts).slice(0, 20);
+    box.innerHTML = '';
+    sorted.forEach((entry, i) => {
+      const displayVal = weightUnit === 'kg' ? entry.kg : entry.kg / 0.453592;
+      const older = sorted[i+1];
+      let deltaHtml = '';
+      if(older){
+        const diffKg = entry.kg - older.kg;
+        const diffDisplay = weightUnit === 'kg' ? diffKg : diffKg / 0.453592;
+        if(Math.abs(diffDisplay) >= 0.05){
+          const cls = diffDisplay < 0 ? 'down' : 'up';
+          const sign = diffDisplay > 0 ? '+' : '';
+          deltaHtml = '<span class="weight-delta ' + cls + '">' + sign + diffDisplay.toFixed(1) + '</span>';
+        }
+      }
+      const row = document.createElement('div');
+      row.className = 'weight-entry';
+      row.innerHTML =
+        '<span class="wdate">' + formatDateLabel(entry.date) + '</span>' +
+        '<span class="wval">' + deltaHtml + '<span>' + displayVal.toFixed(1) + ' ' + weightUnit + '</span>' +
+          '<button class="wdel" aria-label="Delete weight entry">×</button></span>';
+      row.querySelector('.wdel').addEventListener('click', async () => {
+        const fresh = await getWeights();
+        const idx = fresh.findIndex(x => x.ts === entry.ts);
+        if(idx > -1){ fresh.splice(idx,1); await setWeights(fresh); renderWeightHistory(); }
+      });
+      box.appendChild(row);
+    });
+  }
+
+  // re-render weight list + chart when unit toggled
+  const origSetUnit = setUnit;
+  setUnit = function(u){ origSetUnit(u); renderWeightHistory(); };
+  $('unitKg').addEventListener('click', () => renderWeightHistory());
+  $('unitLb').addEventListener('click', () => renderWeightHistory());
+
+  // ---------- weight chart (plain inline SVG, no library) ----------
+  function renderWeightChart(list){
+    const box = $('chartBox');
+    if(!list.length){
+      box.innerHTML = '<div class="chart-empty">Log a couple of weigh-ins to see a trend line here.</div>';
+      return;
+    }
+    const sorted = [...list].sort((a,b) => a.ts - b.ts).slice(-30); // last 30 entries
+    const vals = sorted.map(e => weightUnit === 'kg' ? e.kg : e.kg / 0.453592);
+
+    const W = 600, H = 160, padL = 34, padR = 10, padT = 12, padB = 22;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+
+    let min = Math.min(...vals), max = Math.max(...vals);
+    if(min === max){ min -= 1; max += 1; }
+    const margin = (max - min) * 0.12;
+    min -= margin; max += margin;
+
+    const xFor = i => sorted.length === 1 ? padL + plotW/2 : padL + (i/(sorted.length-1)) * plotW;
+    const yFor = v => padT + plotH - ((v - min)/(max - min)) * plotH;
+
+    let path = '';
+    sorted.forEach((e,i) => {
+      const x = xFor(i), y = yFor(vals[i]);
+      path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+
+    let dots = '';
+    sorted.forEach((e,i) => {
+      dots += '<circle class="chart-pt" cx="' + xFor(i).toFixed(1) + '" cy="' + yFor(vals[i]).toFixed(1) + '" r="3"></circle>';
+    });
+
+    // a handful of x-axis date labels (first, middle, last)
+    let labels = '';
+    const labelIdxs = sorted.length > 1 ? [0, Math.floor((sorted.length-1)/2), sorted.length-1] : [0];
+    [...new Set(labelIdxs)].forEach(i => {
+      const d = new Date(sorted[i].date + 'T00:00:00');
+      const txt = d.toLocaleDateString(undefined, { month:'short', day:'numeric' });
+      labels += '<text class="chart-axis-label" x="' + xFor(i).toFixed(1) + '" y="' + (H-6) + '" text-anchor="middle">' + txt + '</text>';
+    });
+
+    const maxLabel = max.toFixed(1), minLabel = min.toFixed(1);
+
+    box.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+        '<text class="chart-axis-label" x="' + (padL-4) + '" y="' + (padT+4) + '" text-anchor="end">' + maxLabel + '</text>' +
+        '<text class="chart-axis-label" x="' + (padL-4) + '" y="' + (padT+plotH) + '" text-anchor="end">' + minLabel + '</text>' +
+        '<path class="chart-line" d="' + path.trim() + '"></path>' +
+        dots +
+        labels +
+      '</svg>';
+  }
+
+  // ---------- export / import as JSON ----------
+  $('exportBtn').addEventListener('click', exportData);
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', importData);
+
+  async function exportData(){
+    try{
+      const settings = await getSettings();
+      const weights = await getWeights();
+      const logs = {};
+      if(fbDb){
+        const allLogs = await fbGet('logs');
+        if(allLogs){
+          for(const dateStr of Object.keys(allLogs)){
+            logs[dateStr] = Object.values(allLogs[dateStr]);
+          }
+        }
+      } else {
+        let dayKeys = [];
+        try{
+          const listing = await window.storage.list('log:');
+          dayKeys = (listing && listing.keys) ? listing.keys : [];
+        }catch(e){ dayKeys = []; }
+        for(const key of dayKeys){
+          const dateStr = key.replace(/^log:/, '');
+          logs[dateStr] = await getLog(dateStr);
+        }
+      }
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        settings, weights, logs
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ledger-data-' + todayStr() + '.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }catch(e){
+      alert('Export failed: ' + e.message);
+    }
+  }
+
+  async function importData(ev){
+    const file = ev.target.files[0];
+    if(!file) return;
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if(data.settings) await setSettings(data.settings);
+      if(data.weights) await setWeights(data.weights);
+      if(data.logs){
+        for(const dateStr of Object.keys(data.logs)){
+          await setLog(dateStr, data.logs[dateStr]);
+        }
+      }
+      alert('Import complete.');
+      const settings = await getSettings();
+      if(settings.dailyTarget) dailyTarget = settings.dailyTarget;
+      await refreshLog();
+      await renderWeightHistory();
+    }catch(e){
+      alert('Import failed — make sure this is a JSON file exported from Ledger.');
+    }finally{
+      ev.target.value = '';
+    }
+  }
+
+  // ---------- init ----------
+  async function init(){
+    const settings = await getSettings();
+    if(settings.dailyTarget) dailyTarget = settings.dailyTarget;
+    await refreshLog();
+    await renderWeightHistory();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
